@@ -1,0 +1,40 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: app-server
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app-server
+    spec:
+      containers:
+      - name: app-server
+        image: ripbullnetworks/provisioning-server:latest
+        ports:
+        - containerPort: 5006
+        env:
+        - name: NODE_ENV
+          value: "development"
+        - name: MONGODB_HOST
+          value: "mongodb://mongo:27017/provisioning"
+        - name: REDIS_HOST
+          value: "redis"  
+        - name: WAIT_HOSTS
+          value: "mongo:27017"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+spec:
+  selector:
+    name: app-server
+  externalTrafficPolicy: Cluster
+  ports:
+  - port: 5006
+    nodePort: 30034
+    protocol: TCP
+    targetPort: 80
+  type: LoadBalancer

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+      tier: backend
+      track: stable
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: mongo
+          image: "saurav7055/mongo:v1"
+          ports:
+            - name: http
+              containerPort: 27017
+          env:
+          - name: MONGO_INITDB_DATABASE
+            value: "provisioning"
+          volumeMounts:
+          - name: mongo-persistent-storage
+            mountPath: /data/db
+      volumes:
+      - name: mongo-persistent-storage
+        persistentVolumeClaim:
+          claimName: mongo-vol-claim
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: mongo
+spec:
+  selector:
+    app: mongo
+    tier: backend
+  ports:
+  - protocol: TCP
+    port: 27017
+    targetPort: http
